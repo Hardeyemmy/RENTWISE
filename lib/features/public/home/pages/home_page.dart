@@ -6,16 +6,6 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('RENTWISE'),
-        actions: [
-          TextButton(onPressed: () {}, child: const Text('Properties')),
-          TextButton(onPressed: () {}, child: const Text('About')),
-          TextButton(onPressed: () {}, child: const Text('Home')),
-          const SizedBox(width: 18),
-          FilledButton(onPressed: () {}, child: const Text('Login')),
-        ],
-      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
