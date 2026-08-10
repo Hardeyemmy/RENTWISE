@@ -60,7 +60,7 @@ class _Brand extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons.home_work_rounded,
+            Icons.home_work_sharp,
             size: 32,
             color: Theme.of(context).colorScheme.primary,
           ),
