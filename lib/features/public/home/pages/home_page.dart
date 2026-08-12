@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/hero_welcome.dart';
+import '../widgets/stat_section.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -7,7 +8,9 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(child: Column(children: [HeroSection()])),
+      body: SingleChildScrollView(
+        child: Column(children: [HeroSection(), StatSection()]),
+      ),
     );
   }
 }
