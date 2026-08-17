@@ -5,6 +5,8 @@ import '../widgets/featured_property.dart';
 import '../widgets/why_rentwise.dart';
 import '../widgets/how_it_works.dart';
 import '../widgets/testimonial_section.dart';
+import '../widgets/final_cta_section.dart';
+import '../../../../shared/widgets/app_footer.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -21,6 +23,8 @@ class HomePage extends StatelessWidget {
             WhyRentWiseSection(),
             HowItWorks(),
             TestimonialsSection(),
+            FinalCtaSection(),
+            AppFooter(),
           ],
         ),
       ),

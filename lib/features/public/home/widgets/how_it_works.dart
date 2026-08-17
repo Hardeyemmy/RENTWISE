@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/features/public/home/widgets/featured_property.dart';
 import '../../../../app/theme/app_colors.dart';
 
 class HowItWorks extends StatelessWidget {
