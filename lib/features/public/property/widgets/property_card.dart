@@ -149,7 +149,7 @@ class _PropertyImage extends StatelessWidget {
               : Image.network(
                   property.imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) {
+                  errorBuilder: (_, _, _) {
                     return const Center(
                       child: Icon(Icons.image_not_supported_outlined, size: 48),
                     );

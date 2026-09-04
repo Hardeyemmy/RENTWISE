@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import '../widgets/property_filter_panel.dart';
 import '../../../../app/constants/app_breakpoints.dart';
 import '../models/property.dart';
 import '../providers/property_filter_provider.dart';
@@ -41,6 +41,9 @@ class PropertyListPage extends ConsumerWidget {
                     ref.read(propertyFilterProvider.notifier).setType(value);
                   },
                 ),
+
+                const SizedBox(height: 20),
+                PropertyFilterPanel(onApplied: () {}),
 
                 const SizedBox(height: 28),
 
