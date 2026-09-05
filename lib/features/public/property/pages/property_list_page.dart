@@ -43,7 +43,11 @@ class PropertyListPage extends ConsumerWidget {
                 ),
 
                 const SizedBox(height: 20),
-                PropertyFilterPanel(onApplied: () {}),
+                PropertyFilterPanel(
+                  onApplied: () {
+                    Navigator.pop(context);
+                  },
+                ),
 
                 const SizedBox(height: 28),
 
@@ -127,10 +131,15 @@ class _SearchAndFilterBar extends StatelessWidget {
           return Column(
             children: [
               _SearchField(value: searchQuery, onChanged: onSearchChanged),
+
               const SizedBox(height: 12),
-              _PropertyTypeDropdown(
-                value: selectedType,
-                onChanged: onTypeChanged,
+
+              Row(
+                children: [
+                  Expanded(child: _FilterButton()),
+                  const SizedBox(width: 12),
+                  Expanded(child: _SortButton()),
+                ],
               ),
             ],
           );
@@ -498,6 +507,218 @@ class _EmptyState extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _FilterButton extends ConsumerWidget {
+  const _FilterButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filters = ref.watch(propertyFilterProvider);
+
+    return OutlinedButton.icon(
+      onPressed: () {
+        showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) {
+            return const _MobileFilterSheet();
+          },
+        );
+      },
+      icon: const Icon(Icons.tune_rounded),
+      label: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('Filters'),
+          if (filters.hasActiveFilters) ...[
+            const SizedBox(width: 6),
+            Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFF2563EB),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SortButton extends ConsumerWidget {
+  const _SortButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filters = ref.watch(propertyFilterProvider);
+
+    return OutlinedButton.icon(
+      onPressed: () {
+        showModalBottomSheet<void>(
+          context: context,
+          builder: (context) {
+            return _SortSheet(currentSort: filters.sortBy);
+          },
+        );
+      },
+      icon: const Icon(Icons.swap_vert_rounded),
+      label: const Text('Sort'),
+    );
+  }
+}
+
+class _MobileFilterSheet extends StatelessWidget {
+  const _MobileFilterSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+
+              Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 16, 12),
+                child: Row(
+                  children: [
+                    Text(
+                      'Filter properties',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(height: 1),
+
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  child: const PropertyFilterPanel(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SortSheet extends ConsumerWidget {
+  const _SortSheet({required this.currentSort});
+
+  final PropertySort currentSort;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Sort properties',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            ),
+
+            const SizedBox(height: 16),
+
+            _sortOption(
+              context,
+              ref,
+              PropertySort.newest,
+              'Newest',
+              Icons.new_releases_outlined,
+            ),
+
+            _sortOption(
+              context,
+              ref,
+              PropertySort.priceLowToHigh,
+              'Price: Low to High',
+              Icons.arrow_upward_rounded,
+            ),
+
+            _sortOption(
+              context,
+              ref,
+              PropertySort.priceHighToLow,
+              'Price: High to Low',
+              Icons.arrow_downward_rounded,
+            ),
+
+            _sortOption(
+              context,
+              ref,
+              PropertySort.bedrooms,
+              'Most Bedrooms',
+              Icons.bed_outlined,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sortOption(
+    BuildContext context,
+    WidgetRef ref,
+    PropertySort value,
+    String label,
+    IconData icon,
+  ) {
+    final selected = currentSort == value;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon),
+      title: Text(label),
+      trailing: selected
+          ? const Icon(Icons.check_circle_rounded, color: Color(0xFF2563EB))
+          : null,
+      onTap: () {
+        ref.read(propertyFilterProvider.notifier).setSort(value);
+
+        Navigator.pop(context);
+      },
     );
   }
 }
