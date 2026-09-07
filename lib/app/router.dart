@@ -7,6 +7,7 @@ import '../features/public/about/pages/about_pages.dart';
 import '../features/public/contact/pages/contact_page.dart';
 import '../features/public/home/pages/how_it_works.dart';
 import '../features/public/property/pages/property_list_page.dart';
+import '../features/public/property/pages/property_details.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -25,6 +26,15 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/properties',
           builder: (context, state) => const PropertyListPage(),
+        ),
+
+        GoRoute(
+          path: '/properties/:id',
+          builder: (context, state) {
+            final propertyId = state.pathParameters['id']!;
+
+            return PropertyDetailsPage(propertyId: propertyId);
+          },
         ),
 
         GoRoute(
