@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../pages/property_details.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../models/property.dart';
 
@@ -20,7 +20,14 @@ class PropertyCard extends StatelessWidget {
         side: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
       ),
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) =>
+                  PropertyDetailsPage(propertyId: property.id),
+            ),
+          );
+        },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -14,8 +14,11 @@ class AppShell extends StatelessWidget {
     return Scaffold(
       endDrawer: const MobileNavigationDrawer(),
       body: ResponsiveNav(
-        child: SingleChildScrollView(
-          child: Column(children: [child, const AppFooter()]),
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: child),
+            const SliverToBoxAdapter(child: AppFooter()),
+          ],
         ),
       ),
     );
