@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/property.dart';
 
 class PropertyFilterState {
@@ -45,7 +46,9 @@ class PropertyFilterState {
   }
 
   bool get hasActiveFilters {
-    return type != null ||
+    return searchQuery.trim().isNotEmpty ||
+        location.trim().isNotEmpty ||
+        type != null ||
         minPrice != null ||
         maxPrice != null ||
         bedrooms != null ||
@@ -72,33 +75,41 @@ class PropertyFilterNotifier extends Notifier<PropertyFilterState> {
   void setType(PropertyType? type) {
     if (type == null) {
       state = state.copyWith(clearType: true);
-    } else {
-      state = state.copyWith(type: type);
+      return;
     }
+
+    state = state.copyWith(type: type);
   }
 
   void setMinPrice(double? minPrice) {
     if (minPrice == null) {
       state = state.copyWith(clearMinPrice: true);
-    } else {
-      state = state.copyWith(minPrice: minPrice);
+      return;
     }
+
+    state = state.copyWith(minPrice: minPrice);
   }
 
   void setMaxPrice(double? maxPrice) {
     if (maxPrice == null) {
       state = state.copyWith(clearMaxPrice: true);
-    } else {
-      state = state.copyWith(maxPrice: maxPrice);
+      return;
     }
+
+    state = state.copyWith(maxPrice: maxPrice);
+  }
+
+  void setPriceRange({required double minPrice, required double maxPrice}) {
+    state = state.copyWith(minPrice: minPrice, maxPrice: maxPrice);
   }
 
   void setBedrooms(int? bedrooms) {
     if (bedrooms == null) {
       state = state.copyWith(clearBedrooms: true);
-    } else {
-      state = state.copyWith(bedrooms: bedrooms);
+      return;
     }
+
+    state = state.copyWith(bedrooms: bedrooms);
   }
 
   void setSort(PropertySort sort) {
