@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../widgets/property_filter_panel.dart';
+
 import '../../../../app/constants/app_breakpoints.dart';
 import '../models/property.dart';
 import '../providers/property_filter_provider.dart';
 import '../providers/property_provider.dart';
 import '../widgets/property_card.dart';
+import '../widgets/property_filter_panel.dart';
 
 class PropertyListPage extends ConsumerWidget {
   const PropertyListPage({super.key});
@@ -17,63 +18,62 @@ class PropertyListPage extends ConsumerWidget {
 
     return Container(
       color: const Color(0xFFF8FAFC),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 56),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1200),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const _PageHeader(),
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 56),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _PageHeader(),
 
-                const SizedBox(height: 36),
+              const SizedBox(height: 36),
 
-                _SearchAndFilterBar(
-                  searchQuery: filters.searchQuery,
-                  selectedType: filters.type,
-                  onSearchChanged: (value) {
-                    ref
-                        .read(propertyFilterProvider.notifier)
-                        .setSearchQuery(value);
-                  },
-                  onTypeChanged: (value) {
-                    ref.read(propertyFilterProvider.notifier).setType(value);
-                  },
-                ),
+              _SearchAndFilterBar(
+                searchQuery: filters.searchQuery,
+                selectedType: filters.type,
+                onSearchChanged: (value) {
+                  ref
+                      .read(propertyFilterProvider.notifier)
+                      .setSearchQuery(value);
+                },
+                onTypeChanged: (value) {
+                  ref.read(propertyFilterProvider.notifier).setType(value);
+                },
+              ),
 
-                const SizedBox(height: 20),
-                PropertyFilterPanel(
-                  onApplied: () {
-                    Navigator.pop(context);
-                  },
-                ),
+              const SizedBox(height: 20),
 
-                const SizedBox(height: 28),
+              PropertyFilterPanel(
+                onApplied: () {
+                  Navigator.pop(context);
+                },
+              ),
 
-                _ResultsHeader(
-                  count: properties.length,
-                  sortBy: filters.sortBy,
-                  onSortChanged: (value) {
-                    ref.read(propertyFilterProvider.notifier).setSort(value);
-                  },
-                  onClearFilters: filters.hasActiveFilters
-                      ? () {
-                          ref
-                              .read(propertyFilterProvider.notifier)
-                              .clearFilters();
-                        }
-                      : null,
-                ),
+              const SizedBox(height: 28),
 
-                const SizedBox(height: 20),
+              _ResultsHeader(
+                count: properties.length,
+                sortBy: filters.sortBy,
+                onSortChanged: (value) {
+                  ref.read(propertyFilterProvider.notifier).setSort(value);
+                },
+                onClearFilters: filters.hasActiveFilters
+                    ? () {
+                        ref
+                            .read(propertyFilterProvider.notifier)
+                            .clearFilters();
+                      }
+                    : null,
+              ),
 
-                if (properties.isEmpty)
-                  const _EmptyState()
-                else
-                  _PropertyGrid(properties: properties),
-              ],
-            ),
+              const SizedBox(height: 20),
+
+              if (properties.isEmpty)
+                const _EmptyState()
+              else
+                _PropertyGrid(properties: properties),
+            ],
           ),
         ),
       ),
@@ -154,7 +154,9 @@ class _SearchAndFilterBar extends StatelessWidget {
                 onChanged: onSearchChanged,
               ),
             ),
+
             const SizedBox(width: 16),
+
             Expanded(
               child: _PropertyTypeDropdown(
                 value: selectedType,
@@ -300,12 +302,16 @@ class _PropertyTypeDropdown extends StatelessWidget {
     switch (type) {
       case PropertyType.apartment:
         return 'Apartment';
+
       case PropertyType.house:
         return 'House';
+
       case PropertyType.duplex:
         return 'Duplex';
+
       case PropertyType.studio:
         return 'Studio';
+
       case PropertyType.office:
         return 'Office';
     }
@@ -381,7 +387,9 @@ class _ResultsHeader extends StatelessWidget {
                     ),
                 ],
               ),
+
               const SizedBox(height: 12),
+
               SizedBox(width: double.infinity, child: sortButton),
             ],
           );
@@ -395,13 +403,17 @@ class _ResultsHeader extends StatelessWidget {
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
+
             const Spacer(),
+
             if (onClearFilters != null)
               TextButton(
                 onPressed: onClearFilters,
                 child: const Text('Clear filters'),
               ),
+
             const SizedBox(width: 8),
+
             sortButton,
           ],
         );
@@ -413,10 +425,13 @@ class _ResultsHeader extends StatelessWidget {
     switch (sort) {
       case PropertySort.newest:
         return 'Newest';
+
       case PropertySort.priceLowToHigh:
         return 'Price: Low to High';
+
       case PropertySort.priceHighToLow:
         return 'Price: High to Low';
+
       case PropertySort.bedrooms:
         return 'Most Bedrooms';
     }
@@ -490,14 +505,18 @@ class _EmptyState extends StatelessWidget {
               color: Color(0xFF2563EB),
             ),
           ),
+
           const SizedBox(height: 20),
+
           Text(
             'No properties found',
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
           ),
+
           const SizedBox(height: 8),
+
           Text(
             'Try adjusting your search or filters to find more properties.',
             textAlign: TextAlign.center,
@@ -534,6 +553,7 @@ class _FilterButton extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Text('Filters'),
+
           if (filters.hasActiveFilters) ...[
             const SizedBox(width: 6),
             Container(
@@ -612,7 +632,9 @@ class _MobileFilterSheet extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
+
                     const Spacer(),
+
                     IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close_rounded),

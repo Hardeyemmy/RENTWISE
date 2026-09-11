@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../pages/property_details.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../../../app/theme/app_colors.dart';
 import '../models/property.dart';
 
@@ -20,14 +21,11 @@ class PropertyCard extends StatelessWidget {
         side: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
       ),
       child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) =>
-                  PropertyDetailsPage(propertyId: property.id),
-            ),
-          );
-        },
+        onTap:
+            onTap ??
+            () {
+              context.go('/properties/${property.id}');
+            },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -38,6 +36,9 @@ class PropertyCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // --------------------------------------------------
+                  // Property title
+                  // --------------------------------------------------
                   Text(
                     property.title,
                     maxLines: 1,
@@ -49,6 +50,9 @@ class PropertyCard extends StatelessWidget {
 
                   const SizedBox(height: 7),
 
+                  // --------------------------------------------------
+                  // Location
+                  // --------------------------------------------------
                   Row(
                     children: [
                       const Icon(
@@ -68,8 +72,27 @@ class PropertyCard extends StatelessWidget {
                     ],
                   ),
 
+                  const SizedBox(height: 12),
+
+                  // --------------------------------------------------
+                  // Property type + listing type
+                  // --------------------------------------------------
+                  Row(
+                    children: [
+                      _PropertyTag(label: property.propertyTypeLabel),
+                      const SizedBox(width: 8),
+                      _PropertyTag(
+                        label: property.listingTypeLabel,
+                        highlighted: true,
+                      ),
+                    ],
+                  ),
+
                   const SizedBox(height: 16),
 
+                  // --------------------------------------------------
+                  // Property features
+                  // --------------------------------------------------
                   Row(
                     children: [
                       _PropertyFeature(
@@ -91,6 +114,9 @@ class PropertyCard extends StatelessWidget {
 
                   const SizedBox(height: 18),
 
+                  // --------------------------------------------------
+                  // Price
+                  // --------------------------------------------------
                   Row(
                     children: [
                       Text(
@@ -101,9 +127,9 @@ class PropertyCard extends StatelessWidget {
                               fontWeight: FontWeight.w800,
                             ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: 4),
                       Text(
-                        '/ year',
+                        _pricePeriod(property.listingType),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -130,6 +156,16 @@ class PropertyCard extends StatelessWidget {
 
     return '₦${price.toStringAsFixed(0)}';
   }
+
+  String _pricePeriod(ListingType listingType) {
+    switch (listingType) {
+      case ListingType.rent:
+        return '/ year';
+
+      case ListingType.sale:
+        return '';
+    }
+  }
 }
 
 class _PropertyImage extends StatelessWidget {
@@ -139,31 +175,28 @@ class _PropertyImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = property.images.isNotEmpty ? property.images.first : null;
+
     return Stack(
       children: [
         Container(
           height: 220,
           width: double.infinity,
           color: AppColors.backgroundColor,
-          child: property.imageUrl.isEmpty
-              ? const Center(
-                  child: Icon(
-                    Icons.home_work_outlined,
-                    size: 56,
-                    color: AppColors.textSecondary,
-                  ),
-                )
+          child: imageUrl == null || imageUrl.isEmpty
+              ? const _ImagePlaceholder()
               : Image.network(
-                  property.imageUrl,
+                  imageUrl,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) {
-                    return const Center(
-                      child: Icon(Icons.image_not_supported_outlined, size: 48),
-                    );
+                    return const _ImagePlaceholder();
                   },
                 ),
         ),
 
+        // ------------------------------------------------------------
+        // Featured badge
+        // ------------------------------------------------------------
         if (property.isFeatured)
           Positioned(
             top: 14,
@@ -185,6 +218,32 @@ class _PropertyImage extends StatelessWidget {
             ),
           ),
 
+        // ------------------------------------------------------------
+        // Property status
+        // ------------------------------------------------------------
+        Positioned(
+          left: 14,
+          bottom: 14,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.94),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              property.statusLabel,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+
+        // ------------------------------------------------------------
+        // Favorite button
+        // ------------------------------------------------------------
         Positioned(
           top: 12,
           right: 12,
@@ -193,12 +252,57 @@ class _PropertyImage extends StatelessWidget {
             shape: const CircleBorder(),
             child: IconButton(
               tooltip: 'Save property',
-              onPressed: () {},
+              onPressed: () {
+                // Favorite functionality will be connected
+                // to Riverpod state later.
+              },
               icon: const Icon(Icons.favorite_border_rounded, size: 20),
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ImagePlaceholder extends StatelessWidget {
+  const _ImagePlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Icon(
+        Icons.home_work_outlined,
+        size: 56,
+        color: AppColors.textSecondary,
+      ),
+    );
+  }
+}
+
+class _PropertyTag extends StatelessWidget {
+  const _PropertyTag({required this.label, this.highlighted = false});
+
+  final String label;
+  final bool highlighted;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: highlighted
+            ? AppColors.primaryColor.withValues(alpha: 0.08)
+            : AppColors.backgroundColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: highlighted ? AppColors.primaryColor : AppColors.textSecondary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 }

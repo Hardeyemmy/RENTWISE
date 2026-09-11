@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../app/theme/app_colors.dart';
 import '../models/property.dart';
 import '../providers/property_filter_provider.dart';
 
@@ -15,6 +17,7 @@ class PropertyFilterPanel extends ConsumerStatefulWidget {
 
 class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
   late RangeValues _priceRange;
+  late TextEditingController _locationController;
 
   static const double _minPrice = 500000;
   static const double _maxPrice = 10000000;
@@ -22,12 +25,21 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
   @override
   void initState() {
     super.initState();
+
     final filter = ref.read(propertyFilterProvider);
 
     _priceRange = RangeValues(
       filter.minPrice ?? _minPrice,
       filter.maxPrice ?? _maxPrice,
     );
+
+    _locationController = TextEditingController(text: filter.location);
+  }
+
+  @override
+  void dispose() {
+    _locationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -38,7 +50,7 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceColor,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
       ),
@@ -46,6 +58,7 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(context, notifier),
+
           const SizedBox(height: 24),
 
           _buildLocationField(context, filters, notifier),
@@ -73,23 +86,21 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
   Widget _buildHeader(BuildContext context, PropertyFilterNotifier notifier) {
     return Row(
       children: [
-        const Icon(Icons.tune_rounded, color: Color(0xFF2563EB)),
+        const Icon(Icons.tune_rounded, color: AppColors.primaryColor),
+
         const SizedBox(width: 10),
+
         Text(
           'Filter properties',
           style: Theme.of(
             context,
           ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
-        const Spacer(),
-        TextButton(
-          onPressed: () {
-            notifier.clearFilters();
 
-            setState(() {
-              _priceRange = const RangeValues(_minPrice, _maxPrice);
-            });
-          },
+        const Spacer(),
+
+        TextButton(
+          onPressed: () => _resetFilters(notifier),
           child: const Text('Clear all'),
         ),
       ],
@@ -102,8 +113,9 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
     PropertyFilterNotifier notifier,
   ) {
     return TextFormField(
-      initialValue: filters.location,
+      controller: _locationController,
       onChanged: notifier.setLocation,
+      textInputAction: TextInputAction.search,
       decoration: InputDecoration(
         labelText: 'Location',
         hintText: 'e.g. Lekki, Yaba, Abuja',
@@ -112,14 +124,14 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
             ? IconButton(
                 tooltip: 'Clear location',
                 onPressed: () {
+                  _locationController.clear();
                   notifier.setLocation('');
-                  setState(() {});
                 },
                 icon: const Icon(Icons.close_rounded),
               )
             : null,
         filled: true,
-        fillColor: const Color(0xFFF8FAFC),
+        fillColor: AppColors.backgroundColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -127,6 +139,10 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primaryColor),
         ),
       ),
     );
@@ -146,7 +162,9 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
             context,
           ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
+
         const SizedBox(height: 12),
+
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -156,6 +174,7 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
               selected: filters.type == null,
               onTap: () => notifier.setType(null),
             ),
+
             ...PropertyType.values.map(
               (type) => _typeChip(
                 label: _typeLabel(type),
@@ -194,15 +213,19 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
             context,
           ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
+
         const SizedBox(height: 6),
+
         Text(
           '${_formatCurrency(_priceRange.start)} - '
           '${_formatCurrency(_priceRange.end)}',
           style: Theme.of(
             context,
-          ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF64748B)),
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
         ),
+
         const SizedBox(height: 8),
+
         RangeSlider(
           min: _minPrice,
           max: _maxPrice,
@@ -218,8 +241,10 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
             });
           },
           onChangeEnd: (values) {
-            notifier.setMinPrice(values.start);
-            notifier.setMaxPrice(values.end);
+            notifier.setPriceRange(
+              minPrice: values.start,
+              maxPrice: values.end,
+            );
           },
         ),
       ],
@@ -242,15 +267,19 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
             context,
           ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
+
         const SizedBox(height: 12),
+
         Wrap(
           spacing: 8,
+          runSpacing: 8,
           children: [
             ChoiceChip(
               label: const Text('Any'),
               selected: filters.bedrooms == null,
               onSelected: (_) => notifier.setBedrooms(null),
             ),
+
             ...options.map(
               (bedrooms) => ChoiceChip(
                 label: Text('$bedrooms+'),
@@ -269,17 +298,13 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
       children: [
         Expanded(
           child: OutlinedButton(
-            onPressed: () {
-              notifier.clearFilters();
-
-              setState(() {
-                _priceRange = const RangeValues(_minPrice, _maxPrice);
-              });
-            },
+            onPressed: () => _resetFilters(notifier),
             child: const Text('Reset'),
           ),
         ),
+
         const SizedBox(width: 12),
+
         Expanded(
           child: FilledButton(
             onPressed: widget.onApplied,
@@ -288,6 +313,16 @@ class _PropertyFilterPanelState extends ConsumerState<PropertyFilterPanel> {
         ),
       ],
     );
+  }
+
+  void _resetFilters(PropertyFilterNotifier notifier) {
+    notifier.clearFilters();
+
+    _locationController.clear();
+
+    setState(() {
+      _priceRange = const RangeValues(_minPrice, _maxPrice);
+    });
   }
 
   static String _typeLabel(PropertyType type) {
